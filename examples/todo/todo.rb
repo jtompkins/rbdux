@@ -1,7 +1,6 @@
 require 'hamster'
 
-require_relative '../../lib/action'
-require_relative '../../lib/store'
+require_relative '../../lib/rbdux'
 
 Todo = Struct.new(:text, :completed)
 

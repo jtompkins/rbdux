@@ -1,6 +1,4 @@
-require 'action'
-require 'store'
-require 'middleware/dispatch_interceptor'
+require 'rbdux'
 
 describe Rbdux::Middleware do
   describe '#dispatch_interceptor' do

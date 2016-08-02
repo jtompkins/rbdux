@@ -1,4 +1,4 @@
-require 'store'
+require 'rbdux'
 
 describe Rbdux::Store do
   before do

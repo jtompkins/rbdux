@@ -1,4 +1,4 @@
-require 'action'
+require 'rbdux'
 
 describe Rbdux::Action do
   describe '.define' do
