@@ -1,6 +1,5 @@
 require 'hamster'
-
-require_relative '../../lib/rbdux'
+require 'rbdux'
 
 Todo = Struct.new(:text, :completed)
 
