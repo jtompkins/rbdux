@@ -13,7 +13,7 @@ class CommandProcessor
     when 'add'
       add_todo(params.join(' '))
     when 'toggle'
-      toggle_todo(params.to_i)
+      toggle_todo(params.first.to_i)
     when 'visible'
       toggle_visibility
     when 'exit'

@@ -25,7 +25,7 @@ describe Rbdux::Middleware do
         Rbdux::Middleware.dispatch_interceptor(nil, func_action_instance)
       end
 
-      it 'returns the original action' do
+      it 'returns the value returned from the dispatcher' do
         expect(Rbdux::Middleware
           .dispatch_interceptor(nil, func_action_instance))
           .to eq(func_action_instance)
