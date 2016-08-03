@@ -60,3 +60,11 @@ Alternatively add explicitly like this (no parentheses, no quotes needed, exampl
 #### Pull down most recient changes
 
     git pull og master
+
+#### Now make a pull request in the browser
+
+    https://github.com/your_user_name/rbdux/pulls
+    https://github.com/your_user_name/rbdux/compare
+
+#### Review the changes you made again before submission, then click Create Pull Request
+
