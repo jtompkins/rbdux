@@ -58,6 +58,12 @@ module Rbdux
       self
     end
 
+    def get(state_key = nil)
+      return @state unless state_key
+
+      @state[state_key]
+    end
+
     def reduce(action, state_key = nil, &block)
       validate_functional_inputs(block)
 

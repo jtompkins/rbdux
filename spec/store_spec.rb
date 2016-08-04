@@ -64,6 +64,18 @@ describe Rbdux::Store do
     end
   end
 
+  describe '#when_getting' do
+    it 'raises an error if a block is not passed in' do
+      expect { Rbdux::Store.when_getting }.to raise_error(ArgumentError)
+    end
+
+    it 'returns the Store instance' do
+      store = Rbdux::Store.when_getting(&-> { true })
+
+      expect(store).to eq(Rbdux::Store.instance)
+    end
+  end
+
   describe '#when_merging' do
     it 'raises an error if a block is not passed in' do
       expect { Rbdux::Store.when_merging }.to raise_error(ArgumentError)
@@ -75,6 +87,35 @@ describe Rbdux::Store do
       store = Rbdux::Store.when_merging(&-> { true })
 
       expect(store).to eq(Rbdux::Store.instance)
+    end
+  end
+
+  describe '#get' do
+    let(:expected_state) do
+      {
+        a_key: 'a_value'
+      }
+    end
+
+    context 'when the get_func is set' do
+      it 'calls the get_func instead of the default #get' do
+      end
+    end
+
+    context 'when no key is given' do
+      it 'returns the entire state of the store' do
+        Rbdux::Store.with_state(expected_state)
+
+        expect(Rbdux::Store.get).to eq(expected_state)
+      end
+    end
+
+    context 'when a key is given' do
+      it 'returns only a slice of the state' do
+        Rbdux::Store.with_state(expected_state)
+
+        expect(Rbdux::Store.get(:a_key)).to eq('a_value')
+      end
     end
   end
 
