@@ -26,17 +26,6 @@ module Rbdux
 
     attr_reader :state
 
-    def reduce(action, state_key = nil, &block)
-      validate_functional_inputs(block)
-
-      key = action.name
-
-      reducers[key] = [] unless reducers.key?(key)
-      reducers[key] << Reducer.new(state_key, block)
-
-      self
-    end
-
     def when_merging(&block)
       validate_functional_inputs(block)
 
@@ -54,13 +43,28 @@ module Rbdux
     end
 
     def before(&block)
-      @before_middleware << block if block
+      validate_functional_inputs(block)
+
+      @before_middleware << block
 
       self
     end
 
     def after(&block)
-      @after_middleware << block if block
+      validate_functional_inputs(block)
+
+      @after_middleware << block
+
+      self
+    end
+
+    def reduce(action, state_key = nil, &block)
+      validate_functional_inputs(block)
+
+      key = action.name
+
+      reducers[key] = [] unless reducers.key?(key)
+      reducers[key] << Reducer.new(state_key, block)
 
       self
     end

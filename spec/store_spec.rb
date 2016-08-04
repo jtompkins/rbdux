@@ -40,17 +40,15 @@ describe Rbdux::Store do
     end
   end
 
-  describe '#reduce' do
+  describe '#before' do
     it 'raises an error if a block is not passed in' do
-      expect { Rbdux::Store.reduce }.to raise_error(ArgumentError)
+      expect { Rbdux::Store.before }.to raise_error(ArgumentError)
     end
+  end
 
-    it 'returns the Store instance' do
-      Rbdux::Action.define('add_todo')
-
-      store = Rbdux::Store.reduce(AddTodoAction, &-> { true })
-
-      expect(store).to eq(Rbdux::Store.instance)
+  describe '#after' do
+    it 'raises an error if a block is not passed in' do
+      expect { Rbdux::Store.after }.to raise_error(ArgumentError)
     end
   end
 
@@ -63,6 +61,20 @@ describe Rbdux::Store do
       Rbdux::Action.define('add_todo')
 
       store = Rbdux::Store.when_merging(&-> { true })
+
+      expect(store).to eq(Rbdux::Store.instance)
+    end
+  end
+
+  describe '#reduce' do
+    it 'raises an error if a block is not passed in' do
+      expect { Rbdux::Store.reduce }.to raise_error(ArgumentError)
+    end
+
+    it 'returns the Store instance' do
+      Rbdux::Action.define('add_todo')
+
+      store = Rbdux::Store.reduce(AddTodoAction, &-> { true })
 
       expect(store).to eq(Rbdux::Store.instance)
     end
