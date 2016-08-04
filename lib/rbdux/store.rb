@@ -27,13 +27,12 @@ module Rbdux
     attr_reader :state
 
     def reduce(action, state_key = nil, &block)
-      add_reducer(action, state_key, true, block)
+      validate_functional_inputs(block)
 
-      self
-    end
+      key = action.name
 
-    def reduce_and_merge(action, state_key = nil, &block)
-      add_reducer(action, state_key, false, block)
+      reducers[key] = [] unless reducers.key?(key)
+      reducers[key] << Reducer.new(state_key, block)
 
       self
     end
@@ -42,6 +41,14 @@ module Rbdux
       validate_functional_inputs(block)
 
       @merge_func = block
+
+      self
+    end
+
+    def when_getting(&block)
+      validate_functional_inputs(block)
+
+      @get_func = block
 
       self
     end
@@ -88,7 +95,7 @@ module Rbdux
 
     private
 
-    Reducer = Struct.new(:state_key, :auto_merge, :func)
+    Reducer = Struct.new(:state_key, :func)
 
     attr_reader :observers, :reducers
 
@@ -99,15 +106,6 @@ module Rbdux
       @before_middleware = []
       @after_middleware = []
       @merge_func = nil
-    end
-
-    def add_reducer(action, state_key, auto_merge, func)
-      validate_functional_inputs(func)
-
-      key = action.name
-
-      reducers[key] = [] unless reducers.key?(key)
-      reducers[key] << Reducer.new(state_key, auto_merge, func)
     end
 
     def apply_before_middleware(action)
@@ -128,17 +126,11 @@ module Rbdux
     end
 
     def apply_reducer!(reducer, action)
-      reducer_params = [slice_state(reducer.state_key), action]
-      reducer_params << state unless reducer.auto_merge
-      new_state = reducer.func.call(*reducer_params)
+      new_state = reducer.func.call(slice_state(reducer.state_key), action)
 
       return if new_state.nil?
 
-      @state =  if reducer.auto_merge
-                  merge_state(new_state, reducer.state_key)
-                else
-                  new_state
-                end
+      @state =  merge_state(new_state, reducer.state_key)
     end
 
     def slice_state(state_key)

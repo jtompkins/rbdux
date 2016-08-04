@@ -54,20 +54,6 @@ describe Rbdux::Store do
     end
   end
 
-  describe '#reduce_and_merge' do
-    it 'raises an error if a block is not passed in' do
-      expect { Rbdux::Store.reduce_and_merge }.to raise_error(ArgumentError)
-    end
-
-    it 'returns the Store instance' do
-      Rbdux::Action.define('add_todo')
-
-      store = Rbdux::Store.reduce_and_merge(AddTodoAction, &-> { true })
-
-      expect(store).to eq(Rbdux::Store.instance)
-    end
-  end
-
   describe '#when_merging' do
     it 'raises an error if a block is not passed in' do
       expect { Rbdux::Store.when_merging }.to raise_error(ArgumentError)
@@ -153,44 +139,6 @@ describe Rbdux::Store do
 
       Rbdux::Store.subscribe(&subscribe_cb)
       Rbdux::Store.dispatch(add_action)
-    end
-
-    context 'when the reducer is handling the state merge itself' do
-      let(:final_state_manual_merge) do
-        { manually_merged: true }
-      end
-
-      let(:add_reducer_with_merge) do
-        lambda do |_, _, _|
-          final_state_manual_merge
-        end
-      end
-
-      before do
-        Rbdux::Store.reduce_and_merge(AddTodoAction, &add_reducer_with_merge)
-      end
-
-      it 'passes the old state to the block argument' do
-        expect(add_reducer_with_merge)
-          .to receive(:call)
-          .with(initial_state, add_action, Rbdux::Store.state)
-
-        Rbdux::Store.dispatch(add_action)
-      end
-
-      it 'does not call the internal merge methods' do
-        expect(Rbdux::Store.instance)
-          .to_not receive(:merge_state)
-
-        Rbdux::Store.dispatch(add_action)
-      end
-
-      it 'replaces the state with the value returned from the reducer' do
-        Rbdux::Store.dispatch(add_action)
-
-        expect(Rbdux::Store.state)
-          .to eq(final_state_manual_merge)
-      end
     end
 
     context 'when the store has a custom merge func defined' do

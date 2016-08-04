@@ -5,6 +5,7 @@ AllCops:
     - '**/Rakefile'
     - '**/**/spec_helper.rb'
     - '**/examples/**/*'
+    - '**/*.gemspec'
 
 Documentation:
   Enabled: false
