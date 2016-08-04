@@ -44,11 +44,23 @@ describe Rbdux::Store do
     it 'raises an error if a block is not passed in' do
       expect { Rbdux::Store.before }.to raise_error(ArgumentError)
     end
+
+    it 'returns the Store instance' do
+      store = Rbdux::Store.before(&-> { true })
+
+      expect(store).to eq(Rbdux::Store.instance)
+    end
   end
 
   describe '#after' do
     it 'raises an error if a block is not passed in' do
       expect { Rbdux::Store.after }.to raise_error(ArgumentError)
+    end
+
+    it 'returns the Store instance' do
+      store = Rbdux::Store.after(&-> { true })
+
+      expect(store).to eq(Rbdux::Store.instance)
     end
   end
 
