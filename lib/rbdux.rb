@@ -1,3 +1,5 @@
 require 'rbdux/action'
 require 'rbdux/store'
+require 'rbdux/errors'
+require 'rbdux/stores/memory_store'
 require 'rbdux/middleware/dispatch_interceptor'

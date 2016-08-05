@@ -1,4 +1,5 @@
 require 'securerandom'
+require_relative 'errors'
 
 module Rbdux
   class Store
@@ -13,10 +14,6 @@ module Rbdux
         @instance = nil
       end
 
-      def with_state(state)
-        @instance = Store.new(state)
-      end
-
       def method_missing(method, *args, &block)
         return unless instance.respond_to?(method)
 
@@ -24,22 +21,10 @@ module Rbdux
       end
     end
 
-    attr_reader :state
+    def with_store(store)
+      raise ArgumentError unless store
 
-    def when_merging(&block)
-      validate_functional_inputs(block)
-
-      @merge_func = block
-
-      self
-    end
-
-    def when_getting(&block)
-      validate_functional_inputs(block)
-
-      @get_func = block
-
-      self
+      @store_container = store
     end
 
     def before(&block)
@@ -59,9 +44,11 @@ module Rbdux
     end
 
     def get(state_key = nil)
-      return @state unless state_key
-
-      @state[state_key]
+      if state_key
+        @store_container.get(state_key)
+      else
+        @store_container.get_all
+      end
     end
 
     def reduce(action, state_key = nil, &block)
@@ -76,7 +63,9 @@ module Rbdux
     end
 
     def dispatch(action)
-      previous_state = state
+      validate_store_container
+
+      previous_state = @store_container.get_all
 
       dispatched_action = apply_before_middleware(action)
 
@@ -109,13 +98,11 @@ module Rbdux
 
     attr_reader :observers, :reducers
 
-    def initialize(state = {})
-      @state = state
+    def initialize
       @observers = {}
       @reducers = {}
       @before_middleware = []
       @after_middleware = []
-      @merge_func = nil
     end
 
     def apply_before_middleware(action)
@@ -131,38 +118,28 @@ module Rbdux
 
     def apply_after_middleware(previous_state, action)
       @after_middleware.each do |m|
-        m.call(previous_state, state, action)
+        m.call(previous_state, get, action)
       end
     end
 
     def apply_reducer!(reducer, action)
-      new_state = reducer.func.call(slice_state(reducer.state_key), action)
+      new_state = reducer.func.call(get(reducer.state_key), action)
 
       return if new_state.nil?
 
-      @state =  merge_state(new_state, reducer.state_key)
-    end
-
-    def slice_state(state_key)
-      return state unless state_key
-
-      state[state_key]
-    end
-
-    def merge_state(new_state, state_key)
-      if @merge_func.nil?
-        default_merge(state, new_state, state_key)
+      if reducer.state_key
+        @store_container.set(reducer.state_key, new_state)
       else
-        @merge_func.call(state, new_state, state_key)
+        @store_container.replace(new_state)
       end
-    end
-
-    def default_merge(old_state, new_state, state_key)
-      old_state.dup.merge(state_key ? { state_key => new_state } : new_state)
     end
 
     def validate_functional_inputs(block)
       raise ArgumentError, 'You must define a block.' unless block
+    end
+
+    def validate_store_container
+      raise Rbdux::Errors::MissingStoreContainerError unless @store_container
     end
   end
 end
