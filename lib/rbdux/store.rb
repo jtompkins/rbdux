@@ -22,23 +22,14 @@ module Rbdux
     end
 
     def with_store(store)
-      raise ArgumentError unless store
+      raise ArgumentError, 'You must provide a store.' unless store
 
       @store_container = store
     end
 
-    def before(&block)
-      validate_functional_inputs(block)
-
-      @before_middleware << block
-
-      self
-    end
-
-    def after(&block)
-      validate_functional_inputs(block)
-
-      @after_middleware << block
+    def add_middleware(middleware)
+      @before_middleware << middleware if middleware.respond_to? :before
+      @after_middleware << middleware if middleware.respond_to? :after
 
       self
     end
@@ -67,13 +58,13 @@ module Rbdux
 
       previous_state = @store_container.get_all
 
-      dispatched_action = apply_before_middleware(action)
+      dispatched_action = apply_before_middleware!(action)
 
       reducers.fetch(action.class.name, []).each do |reducer|
         apply_reducer!(reducer, dispatched_action)
       end
 
-      apply_after_middleware(previous_state, dispatched_action)
+      apply_after_middleware!(previous_state, dispatched_action)
 
       observers.values.each(&:call)
     end
@@ -105,20 +96,20 @@ module Rbdux
       @after_middleware = []
     end
 
-    def apply_before_middleware(action)
+    def apply_before_middleware!(action)
       dispatched_action = action
 
       @before_middleware.each do |m|
-        new_action = m.call(self, dispatched_action)
+        new_action = m.before(self, dispatched_action)
         dispatched_action = new_action unless new_action.nil?
       end
 
       dispatched_action
     end
 
-    def apply_after_middleware(previous_state, action)
+    def apply_after_middleware!(previous_state, action)
       @after_middleware.each do |m|
-        m.call(previous_state, get, action)
+        m.after(previous_state, get, action)
       end
     end
 

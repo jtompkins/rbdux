@@ -1,4 +1,5 @@
 require 'rbdux'
+require 'pry'
 
 describe Rbdux::Store do
   before do
@@ -28,27 +29,47 @@ describe Rbdux::Store do
     end
   end
 
-  describe '#before' do
-    it 'raises an error if a block is not passed in' do
-      expect { Rbdux::Store.before }.to raise_error(ArgumentError)
+  describe '#add_middleware' do
+    let(:before_middleware) do
+      (Class.new do
+        def before(_, action)
+          action
+        end
+      end).new
+    end
+
+    let(:after_middleware) do
+      (Class.new do
+        def after(old_state, new_state, action); end
+      end).new
     end
 
     it 'returns the Store instance' do
-      store = Rbdux::Store.before(&-> { true })
+      store = Rbdux::Store.add_middleware(before_middleware)
 
       expect(store).to eq(Rbdux::Store.instance)
     end
-  end
 
-  describe '#after' do
-    it 'raises an error if a block is not passed in' do
-      expect { Rbdux::Store.after }.to raise_error(ArgumentError)
+    context 'when the middleware responds to :before' do
+      it 'adds the middleware to the list of before middleware' do
+        Rbdux::Store.add_middleware(before_middleware)
+
+        expect(Rbdux::Store.instance
+          .instance_variable_get(:@before_middleware)
+          .include?(before_middleware))
+          .to be true
+      end
     end
 
-    it 'returns the Store instance' do
-      store = Rbdux::Store.after(&-> { true })
+    context 'when the middleware responds to :after' do
+      it 'adds the middlewrae to the list of after mi ddleware' do
+        Rbdux::Store.add_middleware(after_middleware)
 
-      expect(store).to eq(Rbdux::Store.instance)
+        expect(Rbdux::Store.instance
+          .instance_variable_get(:@after_middleware)
+          .include?(after_middleware))
+          .to be true
+      end
     end
   end
 
@@ -193,28 +214,51 @@ describe Rbdux::Store do
         AddTodoAction.with_payload(modified_key: 'a modified key')
       end
 
-      let(:before_ware) { -> (_, _) { modified_action } }
-      let(:another_before) { -> (_, _) { nil } }
-      let(:after_ware) { -> (_, _, _) {} }
+      let(:before_middleware) do
+        (Class.new do
+          def initialize(return_val)
+            @to_return = return_val
+          end
+
+          def before(_, _)
+            @to_return
+          end
+        end).new(modified_action)
+      end
+
+      let(:another_middleware) do
+        (Class.new do
+          def before(_, action)
+            action
+          end
+        end).new
+      end
+
+      let(:after_middleware) do
+        (Class.new do
+          def after(old_state, new_state, action); end
+        end).new
+      end
+
       let(:middleware_reducer) { -> (_, _) {} }
 
       before do
-        Rbdux::Store.before(&before_ware)
-        Rbdux::Store.before(&another_before)
-        Rbdux::Store.after(&after_ware)
+        Rbdux::Store.add_middleware(before_middleware)
+        Rbdux::Store.add_middleware(another_middleware)
+        Rbdux::Store.add_middleware(after_middleware)
       end
 
       it 'calls the before middlware before calling the reducers' do
-        expect(before_ware)
-          .to receive(:call)
+        expect(before_middleware)
+          .to receive(:before)
           .with(Rbdux::Store.instance, add_action)
 
         Rbdux::Store.dispatch(add_action)
       end
 
       it 'passes the result of each middleware as the action to the next' do
-        expect(another_before)
-          .to receive(:call)
+        expect(another_middleware)
+          .to receive(:before)
           .with(Rbdux::Store.instance, modified_action)
 
         Rbdux::Store.dispatch(add_action)
@@ -230,8 +274,8 @@ describe Rbdux::Store do
       end
 
       it 'calls the after middleware after calling the reducers' do
-        expect(after_ware)
-          .to receive(:call)
+        expect(after_middleware)
+          .to receive(:after)
           .with(initial_state, initial_state, modified_action)
 
         Rbdux::Store.dispatch(add_action)
