@@ -1,5 +1,6 @@
 require 'hamster'
 require 'rbdux'
+require 'rbdux/stores/immutable_memory_store'
 
 Todo = Struct.new(:text, :completed)
 
@@ -49,9 +50,9 @@ class TodoRenderer
     puts '============='
     puts
 
-    todos = Rbdux::Store.state[:todos]
+    todos = Rbdux::Store.get(:todos)
 
-    if Rbdux::Store.state[:visibility] != :show_completed
+    if Rbdux::Store.get(:visibility) != :show_completed
       todos = todos.reject(&:completed)
     end
 
@@ -80,16 +81,12 @@ Rbdux::Action.define('new_todo')
 Rbdux::Action.define('toggle_visibility')
 
 Rbdux::Store
-  .with_state(Hamster::Hash.new(visibility: :hide_completed, todos: Hamster::Vector.empty))
-  .when_merging do |old_state, new_state, state_key|
-    to_merge =  if state_key
-                  Hamster::Hash.new(state_key => new_state)
-                else
-                  new_state
-                end
-
-    old_state.merge(to_merge)
-  end
+  .with_store(
+    Rbdux::Stores::ImmutableMemoryStore.with_state(
+      visibility: :hide_completed,
+      todos: Hamster::Vector.empty
+    )
+  )
 
 Rbdux::Store.reduce(ToggleVisibilityAction, :visibility) do |state, _|
   state == :hide_completed ? :show_completed : :hide_completed

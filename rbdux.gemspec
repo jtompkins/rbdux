@@ -11,7 +11,8 @@ Gem::Specification.new do |s|
                     "lib/rbdux/store.rb",
                     "lib/rbdux/errors.rb",
                     "lib/rbdux/middleware/thunk.rb",
-                    "lib/rbdux/stores/memory_store.rb"
+                    "lib/rbdux/stores/memory_store.rb",
+                    "lib/rbdux/stores/immutable_memory_store.rb"
                   ]
   s.homepage    =
     'https://github.com/jtompkins/rbdux'

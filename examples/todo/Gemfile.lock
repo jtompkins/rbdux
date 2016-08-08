@@ -4,7 +4,7 @@ GEM
     concurrent-ruby (1.0.2)
     hamster (3.0.0)
       concurrent-ruby (~> 1.0)
-    rbdux (0.1)
+    rbdux (0.2)
 
 PLATFORMS
   ruby
