@@ -36,27 +36,19 @@ describe Rbdux::Store do
   end
 
   describe '#add_middleware' do
-    let(:before_middleware) do
-      (Class.new do
-        def before(_, action)
-          action
-        end
-      end).new
-    end
-
-    let(:after_middleware) do
-      (Class.new do
-        def after(old_state, new_state, action); end
-      end).new
-    end
-
     it 'returns the Store instance' do
-      store = Rbdux::Store.add_middleware(before_middleware)
+      store = Rbdux::Store.add_middleware(Object.new)
 
       expect(store).to eq(Rbdux::Store.instance)
     end
 
     context 'when the middleware responds to :before' do
+      let(:before_middleware) do
+        (Class.new do
+          def before(_, _); end
+        end).new
+      end
+
       it 'adds the middleware to the list of before middleware' do
         Rbdux::Store.add_middleware(before_middleware)
 
@@ -68,6 +60,12 @@ describe Rbdux::Store do
     end
 
     context 'when the middleware responds to :after' do
+      let(:after_middleware) do
+        (Class.new do
+          def after(old_state, new_state, action); end
+        end).new
+      end
+
       it 'adds the middlewrae to the list of after mi ddleware' do
         Rbdux::Store.add_middleware(after_middleware)
 
