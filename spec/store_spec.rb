@@ -27,6 +27,12 @@ describe Rbdux::Store do
     it 'raises an error if a container is not passed in' do
       expect { Rbdux::Store.with_store }.to raise_error(ArgumentError)
     end
+
+    it 'returns the Store instance' do
+      store = Rbdux::Store.with_store(Object.new)
+
+      expect(store).to eq(Rbdux::Store.instance)
+    end
   end
 
   describe '#add_middleware' do

@@ -25,6 +25,8 @@ module Rbdux
       raise ArgumentError, 'You must provide a store.' unless store
 
       @store_container = store
+
+      self
     end
 
     def add_middleware(middleware)
@@ -35,6 +37,8 @@ module Rbdux
     end
 
     def get(state_key = nil)
+      validate_store_container
+
       if state_key
         @store_container.get(state_key)
       else
