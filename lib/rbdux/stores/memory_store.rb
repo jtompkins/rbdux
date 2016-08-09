@@ -1,3 +1,5 @@
+require 'thread'
+
 module Rbdux
   module Stores
     class MemoryStore
@@ -14,11 +16,15 @@ module Rbdux
       end
 
       def set(key, value)
-        state[key] = value
+        @lock.synchronize do
+          state[key] = value
+        end
       end
 
       def replace(state)
-        @state = state
+        @lock.synchronize do
+          @state = state
+        end
       end
 
       private
@@ -27,6 +33,7 @@ module Rbdux
 
       def initialize(state)
         @state = state
+        @lock = Mutex.new
       end
     end
   end
