@@ -1,8 +1,8 @@
 Gem::Specification.new do |s|
   s.name        = 'rbdux'
-  s.version     = '0.2'
-  s.date        = '2016-08-08'
-  s.summary     = "A simple one-way dataflow library, inspired by Redux"
+  s.version     = '0.3'
+  s.date        = '2016-08-21'
+  s.summary     = "A simple one-way dataflow library, inspired by Redux."
   s.authors     = ["Joshua Tompkins"]
   s.email       = 'josh@joshtompkins.com'
   s.files       = [

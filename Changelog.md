@@ -1,3 +1,11 @@
+## 0.3 (8/21/16)
+
+Features:
+
+* `Rbdux::Store#get` has been replaced with `Rbdux::Store#fetch`, which follows the normal Ruby semantics for `#fetch` methods.
+* Rbdux now has documentation, a changelog, and a contribution guide!
+* The `Dispatch Interceptor` middleware has been renamed `ThunkMiddleware`, matching the middleware of the same name from Redux.
+
 ## 0.2 (8/9/2016)
 
 Features:
