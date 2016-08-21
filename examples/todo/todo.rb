@@ -50,9 +50,9 @@ class TodoRenderer
     puts '============='
     puts
 
-    todos = Rbdux::Store.get(:todos)
+    todos = Rbdux::Store.fetch(:todos)
 
-    if Rbdux::Store.get(:visibility) != :show_completed
+    if Rbdux::Store.fetch(:visibility) != :show_completed
       todos = todos.reject(&:completed)
     end
 
