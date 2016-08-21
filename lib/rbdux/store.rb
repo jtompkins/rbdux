@@ -36,13 +36,13 @@ module Rbdux
       self
     end
 
-    def get(state_key = nil)
+    def fetch(state_key = nil, default_value = nil, &block)
       validate_store_container
 
       if state_key
-        @store_container.get(state_key)
+        @store_container.fetch(state_key, default_value, &block)
       else
-        @store_container.get_all
+        @store_container.all
       end
     end
 
@@ -60,7 +60,7 @@ module Rbdux
     def dispatch(action)
       validate_store_container
 
-      previous_state = @store_container.get_all
+      previous_state = @store_container.all
 
       dispatched_action = apply_before_middleware!(action)
 
@@ -113,12 +113,12 @@ module Rbdux
 
     def apply_after_middleware!(previous_state, action)
       @after_middleware.each do |m|
-        m.after(previous_state, get, action)
+        m.after(previous_state, fetch, action)
       end
     end
 
     def apply_reducer!(reducer, action)
-      new_state = reducer.func.call(get(reducer.state_key), action)
+      new_state = reducer.func.call(fetch(reducer.state_key), action)
 
       return if new_state.nil?
 

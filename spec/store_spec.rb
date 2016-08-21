@@ -77,7 +77,7 @@ describe Rbdux::Store do
     end
   end
 
-  describe '#get' do
+  describe '#fetch' do
     let(:expected_state) do
       {
         a_key: 'a_value'
@@ -88,19 +88,35 @@ describe Rbdux::Store do
       Rbdux::Stores::MemoryStore.with_state(expected_state)
     end
 
+    before do
+      Rbdux::Store.with_store(memory_store)
+    end
+
     context 'when no key is given' do
       it 'returns the entire state of the store' do
-        Rbdux::Store.with_store(memory_store)
-
-        expect(Rbdux::Store.get).to eq(expected_state)
+        expect(Rbdux::Store.fetch).to eq(expected_state)
       end
     end
 
     context 'when a key is given' do
       it 'returns only a slice of the state' do
-        Rbdux::Store.with_store(memory_store)
+        expect(Rbdux::Store.fetch(:a_key)).to eq('a_value')
+      end
+    end
 
-        expect(Rbdux::Store.get(:a_key)).to eq('a_value')
+    context 'when a default argument is given' do
+      it 'returns the default if the key isn\'t found' do
+        expect(Rbdux::Store.fetch(:another_key, [])).to eq([])
+      end
+    end
+
+    context 'when a block is given' do
+      it 'calls the block if the key isn\'t found' do
+        called = false
+
+        Rbdux::Store.fetch(:another_key) { called = true }
+
+        expect(called).to be_truthy
       end
     end
   end
@@ -183,7 +199,7 @@ describe Rbdux::Store do
         Rbdux::Store.reduce(AddTodoAction, &add_reducer)
         Rbdux::Store.dispatch(add_action)
 
-        expect(Rbdux::Store.get).to eq(true)
+        expect(Rbdux::Store.fetch).to eq(true)
       end
     end
 
@@ -209,7 +225,7 @@ describe Rbdux::Store do
         Rbdux::Store.reduce(AddTodoAction, :can_add_todos, &add_reducer)
         Rbdux::Store.dispatch(add_action)
 
-        expect(Rbdux::Store.get).to eq(final_state)
+        expect(Rbdux::Store.fetch).to eq(final_state)
       end
     end
 
@@ -271,7 +287,7 @@ describe Rbdux::Store do
       it 'does not update the action if the middleware returns nil' do
         expect(middleware_reducer)
           .to receive(:call)
-          .with(Rbdux::Store.get, modified_action)
+          .with(Rbdux::Store.fetch, modified_action)
 
         Rbdux::Store.reduce(AddTodoAction, &middleware_reducer)
         Rbdux::Store.dispatch(add_action)

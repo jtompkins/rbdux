@@ -7,11 +7,15 @@ module Rbdux
         ImmutableMemoryStore.new(state)
       end
 
-      def get(key)
-        state[key]
+      def fetch(key, default_value = nil)
+        if block_given?
+          state.fetch(key) { yield }
+        else
+          state.fetch(key, default_value)
+        end
       end
 
-      def get_all
+      def all
         state.to_h
       end
 

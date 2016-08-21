@@ -30,7 +30,7 @@ describe Rbdux::Stores::ImmutableMemoryStore do
     it 'builds a MemoryStore with the specified state' do
       s = Rbdux::Stores::ImmutableMemoryStore.with_state(initial_state)
 
-      expect(s.get_all).to eq(initial_state)
+      expect(s.all).to eq(initial_state)
     end
 
     it 'converts a Hash to a Hamster::Hash' do
@@ -40,19 +40,35 @@ describe Rbdux::Stores::ImmutableMemoryStore do
     end
   end
 
-  describe '#get' do
+  describe '#fetch' do
     it 'returns part of the tree by key' do
-      expect(store.get(:a_key)).to eq('a_value')
+      expect(store.fetch(:a_key)).to eq('a_value')
+    end
+
+    context 'when a default argument is given' do
+      it 'returns the default if the key isn\'t found' do
+        expect(store.fetch(:not_found, [])).to eq([])
+      end
+    end
+
+    context 'when a block is given' do
+      it 'calls the block if the key isn\'t found' do
+        called = false
+
+        store.fetch(:not_found) { called = true }
+
+        expect(called).to be_truthy
+      end
     end
   end
 
-  describe '#get_all' do
+  describe '#all' do
     it 'returns the entire state tree' do
-      expect(store.get_all).to eq(initial_state)
+      expect(store.all).to eq(initial_state)
     end
 
     it 'converts the internal immutable hash to a normal Hash' do
-      expect(store.get_all).to be_a Hash
+      expect(store.all).to be_a Hash
     end
   end
 
@@ -60,7 +76,7 @@ describe Rbdux::Stores::ImmutableMemoryStore do
     it 'sets a single value by key' do
       store.set(:a_key, 'a_new_value')
 
-      expect(store.get_all).to eq(end_state)
+      expect(store.all).to eq(end_state)
     end
   end
 
@@ -68,7 +84,7 @@ describe Rbdux::Stores::ImmutableMemoryStore do
     it 'replaces the entire state tree' do
       store.replace(a_different_state)
 
-      expect(store.get_all).to eq(a_different_state)
+      expect(store.all).to eq(a_different_state)
     end
   end
 end
