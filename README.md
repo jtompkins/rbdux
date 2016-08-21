@@ -1,5 +1,7 @@
 # Rbdux
 
+![Rbdux Logo](/assets/Logo-Dark2x.png)
+
 ## What is Rbdux?
 
 Rbdux is a library (heavily inspired by [ReduxJS]()) that helps enable one-way data flow in Ruby programs. Rbdux exposes a very small API surface area, making it easy to learn and easy to drop in to a program of any size.
